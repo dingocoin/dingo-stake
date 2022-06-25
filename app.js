@@ -1,9 +1,9 @@
-const db = require("./database");
 const nodeRpc = require("@dingocoin-js/node-rpc");
 const Accumulator = require("@dingocoin-js/accumulator");
 const cors = require("cors");
 const express = require("express");
 const rateLimit = require("express-rate-limit");
+const fs = require("fs");
 
 // In the same block, the same UTXO can appear in both the vout of some
 // tx and the vin of some other tx. Take care to add first before deleting,
@@ -27,7 +27,7 @@ const diff = async (height, block, rpcClient) => {
 
     for (const vin of tx.vins) {
       if (vin.type !== "coinbase") {
-        delUtxos.push({ txid: vin.txid, vout: vin.vout });
+        delUtxos.push({ txid: vin.txid, vout: vin.vout, address: vin.address });
       }
     }
   }
@@ -40,9 +40,6 @@ const STAKE_START = 370000;
 const PAYOUT_INTERVAL = 10000;
 
 (async () => {
-  // Load database.
-  await db.load("./database/database.db");
-
   // Create RPC client.
   const rpcClient = nodeRpc.fromCookie();
 
@@ -64,7 +61,7 @@ const PAYOUT_INTERVAL = 10000;
   // Create accumulator program.
   const acc = new Accumulator(
     rpcClient,
-    ((await db.getLatestHeight()) ?? 0) + 1,
+    STAKE_START,
     120,
     async (height, block) => {
       if (height % 100 === 0) {
@@ -73,9 +70,6 @@ const PAYOUT_INTERVAL = 10000;
 
       // Compute diff from current block.
       const { delUtxos, newUtxos } = await diff(height, block, rpcClient);
-
-      // Begin DB transaction.
-      await db.beginTransaction();
 
       // Insert new UTXOs.
       for (const utxo of newUtxos) {
@@ -90,22 +84,15 @@ const PAYOUT_INTERVAL = 10000;
           staked[utxo.address].score += BigInt(utxo.amount) / STAKE_SIZE;
         }
       }
-      await db.insertUtxos(newUtxos);
 
       // Delete spent UTXOs.
       for (const utxo of delUtxos) {
-        const r = await db.getUtxo(utxo.txid, utxo.vout);
-        const a = r.address;
         for (const d of [staked, currentStaked]) {
-          if (a in d) {
-            delete d[a];
+          if (utxo.address in d) {
+            delete d[utxo.address];
           }
         }
       }
-      await db.removeUtxos(delUtxos);
-
-      // Commit DB transaction.
-      await db.commitTransaction();
 
       // Compute accumulated stake results at payout intervals.
       if (
