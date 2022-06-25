@@ -1,4 +1,4 @@
-# dingo-stake
+# dingostake
 
 Source code for Dingocoin's [staking program](https://dingocoin.org/stake).
 
