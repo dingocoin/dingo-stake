@@ -1,14 +1,14 @@
-const nodeRpc = require("@dingocoin-js/node-rpc");
 const Accumulator = require("@dingocoin-js/accumulator");
 const cors = require("cors");
 const express = require("express");
-const rateLimit = require("express-rate-limit");
 const fs = require("fs");
+const nodeRpc = require("@dingocoin-js/node-rpc");
+const rateLimit = require("express-rate-limit");
 
 // In the same block, the same UTXO can appear in both the vout of some
 // tx and the vin of some other tx. Take care to add first before deleting,
 // so that these duplicates are removed.
-const diff = async (height, block, rpcClient) => {
+const diff = async (height, block, _rpcClient) => {
   const newUtxos = [];
   const delUtxos = [];
 
@@ -145,15 +145,15 @@ const PAYOUT_INTERVAL = 10000;
   const createRateLimit = (windowS, count) =>
     rateLimit({ windowMs: windowS * 1000, max: count });
 
-  app.get("/current", createRateLimit(1, 5), (req, res) => {
+  app.get("/current", createRateLimit(1, 5), (_req, res) => {
     res.send(currentStakedString);
   });
 
-  app.get("/next", createRateLimit(1, 5), (req, res) => {
+  app.get("/next", createRateLimit(1, 5), (_req, res) => {
     res.send(stakedString);
   });
 
-  app.get("/stats", createRateLimit(1, 5), (req, res) => {
+  app.get("/stats", createRateLimit(1, 5), (_req, res) => {
     let totalStaked = 0n;
     for (const k of Object.keys(currentStaked)) {
       totalStaked += BigInt(currentStaked[k].amount);
