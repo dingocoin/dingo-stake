@@ -22,9 +22,10 @@ Wait for the blocks to sync up. You can use `./dingocoin-cli getblockchaininfo` 
 #### 2) Launch staking daemon
 In the clone project folder, run
 ```
-yarn start
+yarn start <PORT_NUM>
 ```
-This will run the staking daemon. The staking daemon scans all existing and incoming blocks from the Dingocoin mainnet. 
+This will run the staking daemon, exposing a REST API on port `<PORT_NUM>`.
+The staking daemon scans all existing and incoming blocks from the Dingocoin mainnet.
 For each transaction, the relevant scoring rules are applied for each transaction:
 - new UTXOs of exactly 100K multiples are counted toward an address's stake;
 - expenditure from an address invalidates its existing stake).
@@ -32,7 +33,7 @@ For each transaction, the relevant scoring rules are applied for each transactio
 ## Querying results
 
 ### Payouts
-After each payout interval (10K), the number of staked units (x100K coins) for each address are written to `history/<PAYOUT_HEIGHT>.payout.json`. 
+After each payout interval (10K), the number of staked units (x100K coins) for each address are written to `history/<PAYOUT_HEIGHT>.payout.json`.
 We provide a script, `payout.js`, which you can use to process these payout data. It also creates and send the Dingocoin payout transaction.
 
 ### REST API

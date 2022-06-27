@@ -166,7 +166,7 @@ const PAYOUT_INTERVAL = 10000;
     res.send({ totalStaked: totalStaked.toString(), height: latestHeight });
   });
 
-  app.listen(sys.argv[1], () => {
-    console.log(`Started on port ${sys.argv[1]}`);
+  app.listen(process.argv[2], () => {
+    console.log(`Started on port ${process.argv[2]}`);
   });
 })();
