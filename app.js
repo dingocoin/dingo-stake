@@ -58,6 +58,8 @@ const PAYOUT_INTERVAL = 10000;
   let stakedString = {};
   let currentStakedString = {};
 
+  let latestHeight = null;
+
   // Create accumulator program.
   const acc = new Accumulator(
     rpcClient,
@@ -134,6 +136,9 @@ const PAYOUT_INTERVAL = 10000;
           score: currentStaked[k].score.toString(),
         };
       }
+
+      // Update latest height.
+      latestHeight = height;
     }
   );
   acc.start();
@@ -158,10 +163,10 @@ const PAYOUT_INTERVAL = 10000;
     for (const k of Object.keys(currentStaked)) {
       totalStaked += BigInt(currentStaked[k].amount);
     }
-    res.send({ totalStaked: totalStaked.toString() });
+    res.send({ totalStaked: totalStaked.toString(), height: latestHeight });
   });
 
-  app.listen(80, () => {
-    console.log(`Started on port 80`);
+  app.listen(sys.argv[1], () => {
+    console.log(`Started on port ${sys.argv[1]}`);
   });
 })();
