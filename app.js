@@ -64,7 +64,7 @@ const PAYOUT_INTERVAL = 10000;
   const acc = new Accumulator(
     rpcClient,
     STAKE_START,
-    120,
+    3,
     async (height, block) => {
       if (height % 100 === 0) {
         console.log("[Live sync] Height = " + height);
